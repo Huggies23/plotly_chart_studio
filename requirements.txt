@@ -1,0 +1,6 @@
+pandas
+numpy
+plotly
+panel
+param
+itertools
