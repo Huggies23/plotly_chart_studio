@@ -478,7 +478,7 @@ display = pn.Tabs(('Chart view', app.plot),
                  ('Data view', app.show_data)
                  )
 
-studio = pn.Row(widgets, display).servable()
+studio = pn.Row(widgets, display)
 
 pn.Column('# Plotly chart creator v. 0.1',
          studio).servable()
