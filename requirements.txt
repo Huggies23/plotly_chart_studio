@@ -3,4 +3,3 @@ numpy
 plotly
 panel
 param
-itertools
