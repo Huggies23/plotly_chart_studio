@@ -6,6 +6,7 @@ import plotly.graph_objs as go
 import panel as pn
 import param 
 from itertools import cycle
+from io import StringIO
 pn.extension('plotly')
 
 # create chart studio class
@@ -15,6 +16,8 @@ class ChartStudio(param.Parameterized):
     
     # import tab
     data_file = param.FileSelector(path='*.csv')
+    use_layout_file = param.Boolean(default = False)
+    layout_file = param.FileSelector(path='*.cslayout')
 
     # chart editor tab 
     
@@ -48,12 +51,12 @@ class ChartStudio(param.Parameterized):
     x_title = param.String(default= 'x_title')
     y_title = param.String(default= 'y_title')
     y_autorange = param.Boolean(default = True)
-    y_min = param.Number(default = None)
-    y_max = param.Number(default = None)
+    y_min = param.Number(default = 0)
+    y_max = param.Number(default = 0)
     y_grid_lines = param.Boolean(default = False)
     y_zeroline = param.Boolean(default = False)
     auto_x_tick_angle = param.Boolean(default = True)
-    x_tick_angle = param.Number(default= None)
+    x_tick_angle = param.Number(default= 0)
     
     # legend tab widgets
     
@@ -66,48 +69,49 @@ class ChartStudio(param.Parameterized):
     # text annotations widgets
     annotation_1 = param.Boolean(default = False)
     text_1 = param.String(default= 'Annotation 1')
-    x_1 = param.Number(default = None)
-    y_1 = param.Number(default = None)
+    x_1 = param.Number(default = 0)
+    y_1 = param.Number(default = 0)
     
     annotation_2 = param.Boolean(default = False)
     text_2 = param.String(default= 'Annotation 2')
-    x_2 = param.Number(default = None)
-    y_2 = param.Number(default = None)
+    x_2 = param.Number(default = 0)
+    y_2 = param.Number(default = 0)
     
     annotation_3 = param.Boolean(default = False)
     text_3 = param.String(default= 'Annotation 3')
-    x_3 = param.Number(default = None)
-    y_3 = param.Number(default = None)
+    x_3 = param.Number(default = 0)
+    y_3 = param.Number(default = 0)
     
     # shape annotation widgets
     
     square_1 = param.Boolean(default = False)
     square_1_colour = param.Color(default='#0000ff')
     square_1_opacity = param.Number(0.5, bounds=(0.0, 1.0))
-    x_min_1 = param.Number(default = None)
-    x_max_1 = param.Number(default = None)
-    y_min_1 = param.Number(default = None)
-    y_max_1 = param.Number(default = None)
+    x_min_1 = param.Number(default = 0)
+    x_max_1 = param.Number(default = 0)
+    y_min_1 = param.Number(default = 0)
+    y_max_1 = param.Number(default = 0)
     
     square_2 = param.Boolean(default = False)
     square_2_colour = param.Color(default='#00ff00')
     square_2_opacity = param.Number(0.5, bounds=(0.0, 1.0))
-    x_min_2 = param.Number(default = None)
-    x_max_2 = param.Number(default = None)
-    y_min_2 = param.Number(default = None)
-    y_max_2 = param.Number(default = None)
+    x_min_2 = param.Number(default = 0)
+    x_max_2 = param.Number(default = 0)
+    y_min_2 = param.Number(default = 0)
+    y_max_2 = param.Number(default = 0)
     
     # export chart tab
     export_to_file = param.String(default= r"Figure_1", doc="Declare name for exported plot file")
-    png = param.Boolean(False, doc="A sample Boolean parameter")
-    svg = param.Boolean(False, doc="A sample Boolean parameter")
-    pdf = param.Boolean(False, doc="A sample Boolean parameter")
-    html = param.Boolean(False, doc="A sample Boolean parameter")
-    json = param.Boolean(True, doc="A sample Boolean parameter")
-    export_plot = param.Action(lambda x: x.param.trigger('export_plot'))
+    png = param.Boolean(default =False)
+    svg = param.Boolean(default =False)
+    pdf = param.Boolean(default =False)
+    html = param.Boolean(default =False)
+    json = param.Boolean(default =False)
+    cslayout = param.Boolean(default =False)
+    export = param.Action(lambda x: x.param.trigger('export'))
     
     data = None
-    figure = None
+    figure = None        
     
     @param.depends('data_file', watch=True) 
     def process_file(self):
@@ -117,10 +121,56 @@ class ChartStudio(param.Parameterized):
         self.x_title = self.xdata
         self.trace_names = self.data_cols[1:]
     
+    # method for reading in data if using the customised filebrowser panel widget
+    #@param.depends('data_file', watch=True) 
+    #def process_file(self):    
+    #    data = StringIO(str(self.data_file,'utf-8')) 
+    #    self.data = pd.read_csv(data)
+    #    self.data_cols = list(self.data.columns)
+    #    self.xdata = self.data_cols[0]
+    #    self.x_title = self.xdata
+    #    self.trace_names = self.data_cols[1:]
+    
     def show_data(self):
         return self.data
     
-    @param.depends('data_file',
+    @param.depends('layout_file','use_layout_file', watch=True) 
+    def import_cslayout(self):
+        if self.use_layout_file == True:
+            read_layout = pd.read_csv(self.layout_file)
+            for attribute in read_layout.Attribute.unique():
+                dtype = read_layout[read_layout.Attribute == attribute].Type.values[0].replace("<class '",'').replace("'>",'')
+                if dtype == 'int':
+                    setattr(self, attribute, int(read_layout[read_layout.Attribute == attribute].Value.values[0]))
+                elif dtype == 'float':
+                    setattr(self, attribute, float(read_layout[read_layout.Attribute == attribute].Value.values[0]))
+                elif dtype == 'bool':
+                    if read_layout[read_layout.Attribute == attribute].Value.values[0] == 'True':
+                        setattr(self, attribute, True)
+                    elif read_layout[read_layout.Attribute == attribute].Value.values[0] == 'False':
+                        setattr(self, attribute, False)
+                elif dtype == 'str':
+                    if str(read_layout[read_layout.Attribute == attribute].Value.values[0]) == 'nan':
+                        setattr(self, attribute, '')
+                    else: 
+                        setattr(self, attribute, read_layout[read_layout.Attribute == attribute].Value.values[0])
+        
+    # function to export .cslayout file which contains param object names and values at time of export
+    def export_cslayout(self):
+        params = list(self.param.objects().keys())
+        params_df = []
+        # ignore name and export_plot params i.e. start at 1 and end at peniltimate param
+        for i in range(len(params)):
+            if params[i] not in ['name','data_file','use_layout_file','layout_file','export_to_file','png','svg','pdf','html','json','cslayout','export']:
+                params_df.append([params[i], 
+                                  getattr(self, list(self.param.objects().keys())[i]),
+                                 type(getattr(self, list(self.param.objects().keys())[i]))
+                                 ]) 
+        # create dataframe and write out csv containing test layout parameters
+        params_df = pd.DataFrame(params_df, columns = ['Attribute','Value','Type'])
+        params_df.to_csv(f'{self.export_to_file}.cslayout', index = False)
+    
+    @param.depends('data_file', 'layout_file', 'use_layout_file',
                    'chart_type', 'bar_mode',
                    'chart_background_colour', 'chart_background_opacity', 'chart_text_font', 'chart_text_size', 'chart_text_colour', 'chart_title',
                    'plot_width', 'plot_height', 'top_margin', 'bottom_margin', 'left_margin', 'right_margin',
@@ -203,8 +253,6 @@ class ChartStudio(param.Parameterized):
                                                ),
                                     x = self.x_1,
                                     y = self.y_1,
-                                    xref = 'paper',
-                                    yref = 'paper',
                                     showarrow = False
                                    )
                               )
@@ -217,8 +265,6 @@ class ChartStudio(param.Parameterized):
                                                ),
                                     x = self.x_2,
                                     y = self.y_2,
-                                    xref = 'paper',
-                                    yref = 'paper',
                                     showarrow = False
                                    )
                               )
@@ -231,8 +277,6 @@ class ChartStudio(param.Parameterized):
                                                ),
                                     x = self.x_3,
                                     y = self.y_3,
-                                    xref = 'paper',
-                                    yref = 'paper',
                                     showarrow = False
                                    )
                               )
@@ -356,7 +400,7 @@ class ChartStudio(param.Parameterized):
             
         return self.figure
     
-    @param.depends('export_plot', watch = True)
+    @param.depends('export', watch = True)
     def export_plots(self):
         if self.figure != None:
             if self.png == True:
@@ -369,17 +413,43 @@ class ChartStudio(param.Parameterized):
                 self.figure.write_json(self.export_to_file + ".json")
             if self.html == True:
                 self.figure.write_html(self.export_to_file + ".html")
+            if self.cslayout == True:
+                self.export_cslayout()
 
+# import custom styles
+pn.extension(css_files=["styles.css"])
+height = 600
 # create instance of ChartStudio class
 app = ChartStudio()
 
 # Create tab for imprting data, call process_file method on start up to load first csv in list and create app.data
-import_tab = pn.Column(app.param.data_file, 
-                       app.process_file)
+import_tab = pn.Column(pn.pane.HTML('''<h3>
+                                            New chart:
+                                        </h3> 
+                                       <p>
+                                           Please choose a .csv containing your data from the dropdown menu.<br>
+                                       <b>Note:</b> This menu only shows .csv files present in the folder from which the chart studio was launched.
+                                       </p>'''
+                                   ),
+                        app.param.data_file, 
+                        #pn.Param(app.param['data_file'],widgets={'data_file2': pn.widgets.FileInput}), # testing fiel browser
+                        pn.pane.HTML('''<h3>
+                                            Import chart layout:
+                                        </h3> 
+                                       <p>
+                                          Select 'Use layout file' and choose a .cslayout file from the dropdown menu.<br>
+                                       <b>Note:</b> This menu only shows .cslayout files present in the folder from which the chart studio was launched.
+                                       </p>'''
+                                   ),
+                       app.param.use_layout_file,
+                       app.param.layout_file,
+                       app.process_file,
+                      css_classes=['widget-box'], height=height)
 
 type_tab = pn.Column(app.param.chart_type,
                      app.param.bar_mode,
-                     pn.pane.HTML('<p><b>Note:</b> "Bar mode" only for "Bar" chart type.</p>')
+                     pn.pane.HTML('<p><b>Note:</b> "Bar mode" only for "Bar" chart type.</p>'),
+                     css_classes=['widget-box'], height = height - 30
                     )
 
 # create chart editor tabs
@@ -396,7 +466,8 @@ general_tab = pn.Column(pn.pane.HTML('<b>General:</b>'),
                         app.param.top_margin,
                         app.param.bottom_margin,
                         app.param.left_margin,
-                        app.param.right_margin
+                        app.param.right_margin,
+                        css_classes=['widget-box'], height=height - 2*30
                        )
 
 axes_tab = pn.Column(pn.pane.HTML('<b>General:</b>'),
@@ -413,12 +484,14 @@ axes_tab = pn.Column(pn.pane.HTML('<b>General:</b>'),
                      app.param.y_grid_lines,
                      app.param.y_zeroline,
                      app.param.auto_x_tick_angle,
-                     app.param.x_tick_angle
+                     app.param.x_tick_angle,
+                     css_classes=['widget-box'], height=height- 2*30
                     )
 
 leg_tab = pn.Column(app.param.auto_position_legend,
                    app.param.legend_x,
-                   app.param.legend_y)
+                   app.param.legend_y,
+                   css_classes=['widget-box'], height=height- 2*30)
     
 style_tab = pn.Tabs(('General', general_tab),
                    ('Axes', axes_tab),
@@ -436,6 +509,7 @@ text_tab = pn.Column(app.param.annotation_1,
                      app.param.text_3,
                      app.param.x_3,
                      app.param.y_3,
+                     css_classes=['widget-box'], height=height- 2*30
                     )
 
 shapes_tab = pn.Column(app.param.square_1,
@@ -451,7 +525,8 @@ shapes_tab = pn.Column(app.param.square_1,
                       app.param.x_min_2,
                        app.param.x_max_2,
                        app.param.y_min_2,
-                       app.param.y_max_2
+                       app.param.y_max_2,
+                       css_classes=['widget-box'], height=height- 2*30
                       )
                        
 anno_tab = pn.Tabs(('Text', text_tab),
@@ -463,24 +538,31 @@ editor_tab = pn.Tabs(('Type', type_tab),
 
 # create chart export tab
 export_tab= pn.Column(app.param.export_to_file,
+                      pn.pane.HTML('<p>Select formats to create in export:</p>'),
                       app.param.png,
                       app.param.svg,
                       app.param.pdf,
                       app.param.html,
                       app.param.json,
-                      app.param.export_plot,
-                      pn.pane.HTML("<b>Exporting may take a few minutes when first used in session. Please be patient and check the destination folder.")
+                      pn.pane.HTML('<p>Select to export chart layout:</p>'),
+                      app.param.cslayout,
+                      app.param.export,
+                      pn.pane.HTML("<b>Exporting may take a few minutes when first used in session. Please be patient and check the destination folder."),
+                      css_classes=['widget-box'], height=height
                      )
 
 widgets = pn.Tabs(('Import data', import_tab),
                      ('Chart editor', editor_tab),
-                     ('Export chart', export_tab))
+                     ('Export chart', export_tab), background = '#F5F5F5'
+                 )
 
 display = pn.Tabs(('Chart view', app.plot),
                  ('Data view', app.show_data)
                  )
 
-studio = pn.Row(widgets, display)
+panes = pn.Row(widgets, display)
 
-pn.Column('# Plotly chart creator v. 0.1',
-         studio).servable()
+studio = pn.Column(pn.pane.HTML('<h1>Plotly Chart Studio<h1>'),
+                   panes,
+                   pn.pane.HTML('<p><b>Developed by:</b> Dave Hughes <b>Last updated:</b> 23 November 2019</p>')).servable()
+studio.servable()
