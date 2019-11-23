@@ -564,5 +564,5 @@ panes = pn.Row(widgets, display)
 
 studio = pn.Column(pn.pane.HTML('<h1>Plotly Chart Studio<h1>'),
                    panes,
-                   pn.pane.HTML('<p><b>Developed by:</b> Dave Hughes <b>Last updated:</b> 23 November 2019</p>')).servable()
+                   pn.pane.HTML('<p><b>Developed by:</b> Dave Hughes <b>Last updated:</b> 23 November 2019</p>'))
 studio.servable()
