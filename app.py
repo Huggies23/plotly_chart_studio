@@ -15,7 +15,7 @@ class ChartStudio(param.Parameterized):
     
     # import tab
     data_file = param.FileSelector(path='*.csv')
-    
+
     # chart editor tab 
     
     # type tab widgets
@@ -114,7 +114,7 @@ class ChartStudio(param.Parameterized):
         self.data = pd.read_csv(self.data_file)
         self.data_cols = list(self.data.columns)
         self.xdata = self.data_cols[0]
-        self.x_axis_title = self.xdata
+        self.x_title = self.xdata
         self.trace_names = self.data_cols[1:]
     
     def show_data(self):
@@ -131,8 +131,9 @@ class ChartStudio(param.Parameterized):
                    'annotation_2', 'text_2', 'x_2', 'y_2',
                    'annotation_3', 'text_3', 'x_3', 'y_3',
                    'square_1', 'square_1_colour', 'square_1_opacity', 'x_min_1', 'x_max_1', 'y_min_1', 'y_max_1',
-                   'square_2', 'square_2_colour', 'square_2_opacity', 'x_min_2', 'x_max_2', 'y_min_2', 'y_max_2',
-                   watch = True) # all plot widgets I think
+                   'square_2', 'square_2_colour', 'square_2_opacity', 'x_min_2', 'x_max_2', 'y_min_2', 'y_max_2'
+                  ) # all plot widgets I think
+    
     def plot(self):
         colours = cycle(['#3b064d','#8105d8','#ed0cef','#fe59d7'])
         # create traces
@@ -202,8 +203,8 @@ class ChartStudio(param.Parameterized):
                                                ),
                                     x = self.x_1,
                                     y = self.y_1,
-                                    #xref = 'paper',
-                                    #yref = 'paper',
+                                    xref = 'paper',
+                                    yref = 'paper',
                                     showarrow = False
                                    )
                               )
@@ -216,8 +217,8 @@ class ChartStudio(param.Parameterized):
                                                ),
                                     x = self.x_2,
                                     y = self.y_2,
-                                    #xref = 'paper',
-                                    #yref = 'paper',
+                                    xref = 'paper',
+                                    yref = 'paper',
                                     showarrow = False
                                    )
                               )
@@ -230,8 +231,8 @@ class ChartStudio(param.Parameterized):
                                                ),
                                     x = self.x_3,
                                     y = self.y_3,
-                                    #xref = 'paper',
-                                    #yref = 'paper',
+                                    xref = 'paper',
+                                    yref = 'paper',
                                     showarrow = False
                                    )
                               )
@@ -368,12 +369,13 @@ class ChartStudio(param.Parameterized):
                 self.figure.write_json(self.export_to_file + ".json")
             if self.html == True:
                 self.figure.write_html(self.export_to_file + ".html")
-                
+
 # create instance of ChartStudio class
 app = ChartStudio()
 
 # Create tab for imprting data, call process_file method on start up to load first csv in list and create app.data
-import_tab = pn.Column(app.param.data_file, app.process_file)
+import_tab = pn.Column(app.param.data_file, 
+                       app.process_file)
 
 type_tab = pn.Column(app.param.chart_type,
                      app.param.bar_mode,

@@ -1,0 +1,58 @@
+h1, h2, h3, h4, h5, h6, p {
+ color: black;
+}
+
+.svg-container{
+    border-style: solid;
+    border-color: black;
+}
+
+.bk-root .bk{
+}
+
+.bk-root .bk-tabs-header .bk-tab {
+    background-color: white;
+    color: black;
+    font-style: normal;
+    border-color: lightgrey;
+    border-style: solid;
+    border-width: 3px 1px 0px 1px
+    
+}
+
+.bk-root .bk-tabs-header .bk-tab.bk-active{
+    background-color: whitesmoke;
+    color: black;
+    font-style: normal;
+    font-weight: bold; 
+    border-color: black;
+    border-style: solid;
+    border-width: 3px 1px 0px 1px;
+}
+
+.bk-root .bk-tabs-header .bk-tab:hover{
+    border-color: black;
+    border-style: solid;
+    border-width: 3px 1px 0px 1px;
+}
+
+.bk .bk-input{
+    border-color: black;
+    width: 90%;
+}
+
+.bk-root .bk-noUi-horizontal {
+    width: 90%;
+}
+
+.widget-box {
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-style: none;
+  border-width: 0px;
+}
+
+.bk-root .bk-btn-group > .bk-btn {
+    flex-grow: 1;
+    -webkit-flex-grow: 0;
+}
