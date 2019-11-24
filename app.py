@@ -18,7 +18,7 @@ class ChartStudio(param.Parameterized):
     data_file = param.FileSelector(path='*.csv')
     use_layout_file = param.Boolean(default = False)
     layout_file = param.FileSelector(path='*.cslayout')
-​
+
     # chart editor tab 
     
     # type tab widgets
