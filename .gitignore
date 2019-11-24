@@ -1,7 +1,3 @@
 .ipynb_checkpoints
 __pycache__
 requirements_full.txt
-*.pdf
-*.svg
-*.png
-*.html
