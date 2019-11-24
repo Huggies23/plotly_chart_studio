@@ -1,6 +1,7 @@
 Attribute,Value,Type
 chart_type,Scatter,<class 'str'>
 bar_mode,group,<class 'str'>
+scatter_mode,lines+markers,<class 'str'>
 chart_background_colour,#ffffff,<class 'str'>
 chart_background_opacity,0,<class 'int'>
 chart_text_font,Arial,<class 'str'>

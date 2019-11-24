@@ -18,12 +18,13 @@ class ChartStudio(param.Parameterized):
     data_file = param.FileSelector(path='*.csv')
     use_layout_file = param.Boolean(default = False)
     layout_file = param.FileSelector(path='*.cslayout')
-
+​
     # chart editor tab 
     
     # type tab widgets
     chart_type = param.ObjectSelector(default="Scatter", objects=["Scatter", "Bar"])
     bar_mode = param.ObjectSelector(default="group", objects=["group", "stack", "relative", "overlay"])
+    scatter_mode = param.ObjectSelector(default = "lines+markers", objects = ["lines+markers","lines","markers"])
     
     # style tab widgets
     
@@ -139,21 +140,25 @@ class ChartStudio(param.Parameterized):
         if self.use_layout_file == True:
             read_layout = pd.read_csv(self.layout_file)
             for attribute in read_layout.Attribute.unique():
+                
                 dtype = read_layout[read_layout.Attribute == attribute].Type.values[0].replace("<class '",'').replace("'>",'')
+                value = read_layout[read_layout.Attribute == attribute].Value.values[0]
+                
                 if dtype == 'int':
-                    setattr(self, attribute, int(read_layout[read_layout.Attribute == attribute].Value.values[0]))
+                    setattr(self, attribute, int(value))
                 elif dtype == 'float':
-                    setattr(self, attribute, float(read_layout[read_layout.Attribute == attribute].Value.values[0]))
+                    setattr(self, attribute, float(value))
                 elif dtype == 'bool':
-                    if read_layout[read_layout.Attribute == attribute].Value.values[0] == 'True':
+                    if value == 'True':
                         setattr(self, attribute, True)
-                    elif read_layout[read_layout.Attribute == attribute].Value.values[0] == 'False':
+                    elif value == 'False':
                         setattr(self, attribute, False)
                 elif dtype == 'str':
-                    if str(read_layout[read_layout.Attribute == attribute].Value.values[0]) == 'nan':
+                    if str(value) == 'nan':
                         setattr(self, attribute, '')
                     else: 
-                        setattr(self, attribute, read_layout[read_layout.Attribute == attribute].Value.values[0])
+                        setattr(self, attribute, value)
+                    
         
     # function to export .cslayout file which contains param object names and values at time of export
     def export_cslayout(self):
@@ -169,9 +174,9 @@ class ChartStudio(param.Parameterized):
         # create dataframe and write out csv containing test layout parameters
         params_df = pd.DataFrame(params_df, columns = ['Attribute','Value','Type'])
         params_df.to_csv(f'{self.export_to_file}.cslayout', index = False)
-    
+        
     @param.depends('data_file', 'layout_file', 'use_layout_file',
-                   'chart_type', 'bar_mode',
+                   'chart_type', 'bar_mode', 'scatter_mode',
                    'chart_background_colour', 'chart_background_opacity', 'chart_text_font', 'chart_text_size', 'chart_text_colour', 'chart_title',
                    'plot_width', 'plot_height', 'top_margin', 'bottom_margin', 'left_margin', 'right_margin',
                    'axes_colour', 'axes_thickness', 'x_title', 'y_title', 'y_autorange', 'y_min', 'y_max','y_grid_lines','y_zeroline',
@@ -183,7 +188,6 @@ class ChartStudio(param.Parameterized):
                    'square_1', 'square_1_colour', 'square_1_opacity', 'x_min_1', 'x_max_1', 'y_min_1', 'y_max_1',
                    'square_2', 'square_2_colour', 'square_2_opacity', 'x_min_2', 'x_max_2', 'y_min_2', 'y_max_2'
                   ) # all plot widgets I think
-    
     def plot(self):
         colours = cycle(['#3b064d','#8105d8','#ed0cef','#fe59d7'])
         # create traces
@@ -196,7 +200,7 @@ class ChartStudio(param.Parameterized):
                 data.append(go.Scatter(x = self.data[self.xdata],
                                        y = self.data[self.trace_names[i]],
                                        name = self.trace_names[i],
-                                       mode = 'lines+markers',
+                                       mode = self.scatter_mode,
                                        marker=dict(size=12,
                                                    color=colour,
                                                    opacity = 0.5
@@ -448,7 +452,8 @@ import_tab = pn.Column(pn.pane.HTML('''<h3>
 
 type_tab = pn.Column(app.param.chart_type,
                      app.param.bar_mode,
-                     pn.pane.HTML('<p><b>Note:</b> "Bar mode" only for "Bar" chart type.</p>'),
+                     app.param.scatter_mode,
+                     pn.pane.HTML('<p><b>Note:</b> "Bar mode" only for "Bar" chart type. "Scatter mode" only for "Scatter" chart type.</p>'),
                      css_classes=['widget-box'], height = height - 30
                     )
 
@@ -556,13 +561,21 @@ widgets = pn.Tabs(('Import data', import_tab),
                      ('Export chart', export_tab), background = '#F5F5F5'
                  )
 
+table = pn.Column(app.show_data,
+                  css_classes=['data-table'], height=height, width = 650)
+
 display = pn.Tabs(('Chart view', app.plot),
-                 ('Data view', app.show_data)
+                 ('Data view', table)
                  )
 
 panes = pn.Row(widgets, display)
 
-studio = pn.Column(pn.pane.HTML('<h1>Plotly Chart Studio<h1>'),
+studio = pn.Column(pn.Row(pn.pane.PNG('logo_pyviz.png', width = 70, height = 70),
+                          pn.pane.PNG('logo_panel.png', width = 70, height = 70),
+                          pn.pane.PNG('logo_plotly.png', width = 70, height = 70),
+                          pn.pane.HTML('<h1>Plotly Chart Studio<h1>')),
                    panes,
                    pn.pane.HTML('<p><b>Developed by:</b> Dave Hughes <b>Last updated:</b> 23 November 2019</p>'))
-studio.servable()
+
+# set servable method to be called for command line and deployed to heroku
+studio.servable()#.show()

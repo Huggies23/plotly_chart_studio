@@ -1,6 +1,7 @@
 Attribute,Value,Type
 chart_type,Bar,<class 'str'>
 bar_mode,overlay,<class 'str'>
+scatter_mode,lines,<class 'str'>
 chart_background_colour,#000000,<class 'str'>
 chart_background_opacity,0.6,<class 'float'>
 chart_text_font,Courier New,<class 'str'>

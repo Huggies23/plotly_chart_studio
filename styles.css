@@ -56,3 +56,11 @@ h1, h2, h3, h4, h5, h6, p {
     flex-grow: 1;
     -webkit-flex-grow: 0;
 }
+
+.data-table {
+  overflow-y: auto;
+  overflow-x: auto;
+  border-style: none;
+  border-width: 0px;
+  position: realtive;
+}
