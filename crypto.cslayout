@@ -1,0 +1,55 @@
+Attribute,Value,Type
+chart_type,Bar,<class 'str'>
+bar_mode,overlay,<class 'str'>
+chart_background_colour,#000000,<class 'str'>
+chart_background_opacity,0.6,<class 'float'>
+chart_text_font,Courier New,<class 'str'>
+chart_text_size,14,<class 'int'>
+chart_text_colour,#00ffff,<class 'str'>
+chart_title,Crypto-currency closing price time series,<class 'str'>
+plot_width,650,<class 'int'>
+plot_height,450,<class 'int'>
+top_margin,60,<class 'int'>
+bottom_margin,80,<class 'int'>
+left_margin,80,<class 'int'>
+right_margin,80,<class 'int'>
+axes_colour,#00ffff,<class 'str'>
+axes_thickness,1,<class 'int'>
+x_title,Date,<class 'str'>
+y_title,Closing price (USD),<class 'str'>
+y_autorange,True,<class 'bool'>
+y_min,0,<class 'int'>
+y_max,25000,<class 'int'>
+y_grid_lines,True,<class 'bool'>
+y_zeroline,False,<class 'bool'>
+auto_x_tick_angle,True,<class 'bool'>
+x_tick_angle,0,<class 'int'>
+auto_position_legend,False,<class 'bool'>
+legend_x,0.8,<class 'float'>
+legend_y,0.99,<class 'float'>
+annotation_1,True,<class 'bool'>
+text_1,"<b>Christmas 2017<br>""boom""</b>",<class 'str'>
+x_1,690,<class 'int'>
+y_1,21000,<class 'int'>
+annotation_2,False,<class 'bool'>
+text_2,Annotation 2,<class 'str'>
+x_2,0,<class 'int'>
+y_2,0,<class 'int'>
+annotation_3,False,<class 'bool'>
+text_3,Annotation 3,<class 'str'>
+x_3,0,<class 'int'>
+y_3,0,<class 'int'>
+square_1,False,<class 'bool'>
+square_1_colour,#0000ff,<class 'str'>
+square_1_opacity,0.5,<class 'float'>
+x_min_1,0,<class 'int'>
+x_max_1,0,<class 'int'>
+y_min_1,0,<class 'int'>
+y_max_1,0,<class 'int'>
+square_2,False,<class 'bool'>
+square_2_colour,#00ff00,<class 'str'>
+square_2_opacity,0.5,<class 'float'>
+x_min_2,0,<class 'int'>
+x_max_2,0,<class 'int'>
+y_min_2,0,<class 'int'>
+y_max_2,0,<class 'int'>
