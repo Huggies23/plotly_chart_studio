@@ -30,7 +30,7 @@ legend_x,0.8,<class 'float'>
 legend_y,0.99,<class 'float'>
 annotation_1,True,<class 'bool'>
 text_1,"<b>Christmas 2017<br>""boom""</b>",<class 'str'>
-x_1,690,<class 'int'>
+x_1,43100,<class 'int'>
 y_1,21000,<class 'int'>
 annotation_2,False,<class 'bool'>
 text_2,Annotation 2,<class 'str'>

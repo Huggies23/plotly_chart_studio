@@ -112,7 +112,8 @@ class ChartStudio(param.Parameterized):
     export = param.Action(lambda x: x.param.trigger('export'))
     
     data = None
-    figure = None        
+    figure = None    
+    update_plot = True
     
     @param.depends('data_file', watch=True) 
     def process_file(self):
@@ -138,9 +139,11 @@ class ChartStudio(param.Parameterized):
     @param.depends('layout_file','use_layout_file', watch=True) 
     def import_cslayout(self):
         if self.use_layout_file == True:
+            self.update_plot = False
             read_layout = pd.read_csv(self.layout_file)
             for attribute in read_layout.Attribute.unique():
-                
+                if attribute == read_layout.Attribute.unique()[-1]:
+                    self.update_plot = True
                 dtype = read_layout[read_layout.Attribute == attribute].Type.values[0].replace("<class '",'').replace("'>",'')
                 value = read_layout[read_layout.Attribute == attribute].Value.values[0]
                 
@@ -157,8 +160,7 @@ class ChartStudio(param.Parameterized):
                     if str(value) == 'nan':
                         setattr(self, attribute, '')
                     else: 
-                        setattr(self, attribute, value)
-                    
+                        setattr(self, attribute, value)    
         
     # function to export .cslayout file which contains param object names and values at time of export
     def export_cslayout(self):
@@ -189,220 +191,221 @@ class ChartStudio(param.Parameterized):
                    'square_2', 'square_2_colour', 'square_2_opacity', 'x_min_2', 'x_max_2', 'y_min_2', 'y_max_2'
                   ) # all plot widgets I think
     def plot(self):
-        colours = cycle(['#3b064d','#8105d8','#ed0cef','#fe59d7'])
-        # create traces
-        data = []
-        for i in range(0, len(self.trace_names)):
-            
-            colour = next(colours)
-            
-            if self.chart_type == 'Scatter':
-                data.append(go.Scatter(x = self.data[self.xdata],
+        if self.update_plot == True:
+            colours = cycle(['#3b064d','#8105d8','#ed0cef','#fe59d7'])
+            # create traces
+            data = []
+            for i in range(0, len(self.trace_names)):
+
+                colour = next(colours)
+
+                if self.chart_type == 'Scatter':
+                    data.append(go.Scatter(x = self.data[self.xdata],
+                                           y = self.data[self.trace_names[i]],
+                                           name = self.trace_names[i],
+                                           mode = self.scatter_mode,
+                                           marker=dict(size=12,
+                                                       color=colour,
+                                                       opacity = 0.5
+                                                      ),
+                                           line = dict(color = colour,
+                                                       width = 2
+                                                      )
+                                          )
+                               )
+
+                elif self.chart_type == 'Bar':
+                    data.append(go.Bar(x = self.data[self.xdata],
                                        y = self.data[self.trace_names[i]],
                                        name = self.trace_names[i],
-                                       mode = self.scatter_mode,
-                                       marker=dict(size=12,
-                                                   color=colour,
-                                                   opacity = 0.5
-                                                  ),
-                                       line = dict(color = colour,
-                                                   width = 2
-                                                  )
+                                       marker=dict(color=colour,
+                                                   opacity = 1.0,
+                                                   line = dict(width = 0)
+                                                    )
                                       )
-                           )
-                
-            elif self.chart_type == 'Bar':
-                data.append(go.Bar(x = self.data[self.xdata],
-                                   y = self.data[self.trace_names[i]],
-                                   name = self.trace_names[i],
-                                   marker=dict(color=colour,
-                                               opacity = 1.0,
-                                               line = dict(width = 0)
-                                                )
-                                  )
-                           )
-            
-        # set values for items with both tickboxes and value boxes
-        if self.y_autorange == True:
-            ymin = None
-            ymax = None
-        else:
-            ymin = self.y_min
-            ymax = self.y_max
-        if self.auto_x_tick_angle == True:
-            xtickangle = None
-        else:
-            xtickangle = self.x_tick_angle
-        if self.auto_position_legend == True:
-            legx = None
-            legy = None
-        else:
-            legx = self.legend_x
-            legy = self.legend_y
-            
-        # set background rgba
-        hex = app.chart_background_colour.lstrip('#')
-        rgb = tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
-        alpha = self.chart_background_opacity
-        bg_rgba = f'rgba({rgb[0]},{rgb[1]},{rgb[2]},{alpha})'
-        
-        # create annotations and shapes
-        annotations = []
-        
-        if self.annotation_1 == True:
-            annotations.append(dict(text = self.text_1,
-                                    font = dict(family = self.chart_text_font,
-                                                size = self.chart_text_size,
-                                                color = self.chart_text_colour
-                                               ),
-                                    x = self.x_1,
-                                    y = self.y_1,
-                                    showarrow = False
-                                   )
-                              )
-        
-        if self.annotation_2 == True:
-            annotations.append(dict(text = self.text_2,
-                                    font = dict(family = self.chart_text_font,
-                                                size = self.chart_text_size,
-                                                color = self.chart_text_colour
-                                               ),
-                                    x = self.x_2,
-                                    y = self.y_2,
-                                    showarrow = False
-                                   )
-                              )
-            
-        if self.annotation_3 == True:
-            annotations.append(dict(text = self.text_3,
-                                    font = dict(family = self.chart_text_font,
-                                                size = self.chart_text_size,
-                                                color = self.chart_text_colour
-                                               ),
-                                    x = self.x_3,
-                                    y = self.y_3,
-                                    showarrow = False
-                                   )
-                              )
-            
-        shapes = []
-        
-        if self.square_1 == True:
-            shapes.append(dict(type = 'rect',
-                              layer = 'below',
-                              x0 = self.x_min_1,
-                              x1 = self.x_max_1,
-                              y0 = self.y_min_1,
-                              y1 = self.y_max_1,
-                              opacity = self.square_1_opacity,
-                              fillcolor = self.square_1_colour,
-                              line = dict(width = 0)
-                              )
-                         )
-            
-        if self.square_2 == True:
-            shapes.append(dict(type = 'rect',
-                              layer = 'below',
-                              x0 = self.x_min_2,
-                              x1 = self.x_max_2,
-                              y0 = self.y_min_2,
-                              y1 = self.y_max_2,
-                              opacity = self.square_2_opacity,
-                              fillcolor = self.square_2_colour,
-                              line = dict(width = 0)
-                              )
-                         )
-        # create layout
-        
-        layout = go.Layout(title = dict(text = '<b>'+self.chart_title+'</b>',
+                               )
+
+            # set values for items with both tickboxes and value boxes
+            if self.y_autorange == True:
+                ymin = None
+                ymax = None
+            else:
+                ymin = self.y_min
+                ymax = self.y_max
+            if self.auto_x_tick_angle == True:
+                xtickangle = None
+            else:
+                xtickangle = self.x_tick_angle
+            if self.auto_position_legend == True:
+                legx = None
+                legy = None
+            else:
+                legx = self.legend_x
+                legy = self.legend_y
+
+            # set background rgba
+            hex = app.chart_background_colour.lstrip('#')
+            rgb = tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
+            alpha = self.chart_background_opacity
+            bg_rgba = f'rgba({rgb[0]},{rgb[1]},{rgb[2]},{alpha})'
+
+            # create annotations and shapes
+            annotations = []
+
+            if self.annotation_1 == True:
+                annotations.append(dict(text = self.text_1,
                                         font = dict(family = self.chart_text_font,
-                                                    size = self.chart_text_size + 4,
-                                                    color = self.chart_text_colour),
-                                        x = 0.5
-                                       ),
-                           showlegend=True,
-                           hovermode = 'x',
-                           legend = dict(font = dict(family = self.chart_text_font,
-                                                     size = self.chart_text_size,
-                                                     color = self.chart_text_colour
-                                                    ),
-                                         x = legx,
-                                         y = legy,
-                                         bgcolor = 'rgba(0,0,0,0)'
-                                        ),
-                           margin = dict(t = self.top_margin,
-                                         l = self.left_margin,
-                                         b = self.bottom_margin,
-                                         r = self.right_margin
-                                        ),
-                           width = self.plot_width,
-                           height = self.plot_height,
-                           font = dict(family = self.chart_text_font,
-                                       size = self.chart_text_size,
-                                       color = self.chart_text_colour
-                                      ),
-                           paper_bgcolor=bg_rgba,
-                           plot_bgcolor='rgba(0,0,0,0)',
-                           xaxis = dict(visible = True,
-                                        color = self.axes_colour,
-                                        title = dict(text = '<b>'+self.x_title+'</b>',
-                                                     font = dict(family = self.chart_text_font,
-                                                                 size = self.chart_text_size,
-                                                                 color = self.chart_text_colour
-                                                                )
-                                                    ),
-                                        #range = None,
-                                        ticks = 'outside',
-                                        ticklen = 5,
-                                        tickwidth = self.axes_thickness,
-                                        tickcolor = self.axes_colour,
-                                        tickfont = dict(family = self.chart_text_font,
-                                                        size = self.chart_text_size,
-                                                        color = self.chart_text_colour
-                                                       ),
-                                        tickangle = xtickangle,
-                                        showline = True,
-                                        linecolor = self.axes_colour,
-                                        linewidth = self.axes_thickness,
-                                        showgrid = False,
-                                        zeroline = False,
-                                       ),
-                           yaxis = dict(visible = True,
-                                        color = self.axes_colour,
-                                        title = dict(text = '<b>'+self.y_title+'</b>',
-                                                     font = dict(family = self.chart_text_font,
-                                                                 size = self.chart_text_size,
-                                                                 color = self.chart_text_colour
-                                                                )
-                                                    ),
-                                        range = [ymin,ymax],
-                                        rangemode = 'tozero',
-                                        ticks = 'outside',
-                                        ticklen = 5,
-                                        tickwidth = self.axes_thickness,
-                                        tickcolor = self.axes_colour,
-                                        tickfont = dict(family = self.chart_text_font,
-                                                        size = self.chart_text_size,
-                                                        color = self.chart_text_colour
-                                                       ),
-                                        showline = True,
-                                        linecolor = self.axes_colour,
-                                        linewidth = self.axes_thickness,
-                                        showgrid = self.y_grid_lines,
-                                        gridcolor = 'grey',
-                                        zeroline = self.y_zeroline,
-                                        zerolinecolor = 'grey',
-                                        zerolinewidth = 1
-                                       ),
-                           barmode = self.bar_mode,
-                           annotations = annotations,
-                           shapes = shapes
-                          )
-        
-        # create figure
-        self.figure = go.Figure(data=data, layout = layout)
-            
-        return self.figure
+                                                    size = self.chart_text_size,
+                                                    color = self.chart_text_colour
+                                                   ),
+                                        x = self.x_1,
+                                        y = self.y_1,
+                                        showarrow = False
+                                       )
+                                  )
+
+            if self.annotation_2 == True:
+                annotations.append(dict(text = self.text_2,
+                                        font = dict(family = self.chart_text_font,
+                                                    size = self.chart_text_size,
+                                                    color = self.chart_text_colour
+                                                   ),
+                                        x = self.x_2,
+                                        y = self.y_2,
+                                        showarrow = False
+                                       )
+                                  )
+
+            if self.annotation_3 == True:
+                annotations.append(dict(text = self.text_3,
+                                        font = dict(family = self.chart_text_font,
+                                                    size = self.chart_text_size,
+                                                    color = self.chart_text_colour
+                                                   ),
+                                        x = self.x_3,
+                                        y = self.y_3,
+                                        showarrow = False
+                                       )
+                                  )
+
+            shapes = []
+
+            if self.square_1 == True:
+                shapes.append(dict(type = 'rect',
+                                  layer = 'below',
+                                  x0 = self.x_min_1,
+                                  x1 = self.x_max_1,
+                                  y0 = self.y_min_1,
+                                  y1 = self.y_max_1,
+                                  opacity = self.square_1_opacity,
+                                  fillcolor = self.square_1_colour,
+                                  line = dict(width = 0)
+                                  )
+                             )
+
+            if self.square_2 == True:
+                shapes.append(dict(type = 'rect',
+                                  layer = 'below',
+                                  x0 = self.x_min_2,
+                                  x1 = self.x_max_2,
+                                  y0 = self.y_min_2,
+                                  y1 = self.y_max_2,
+                                  opacity = self.square_2_opacity,
+                                  fillcolor = self.square_2_colour,
+                                  line = dict(width = 0)
+                                  )
+                             )
+            # create layout
+
+            layout = go.Layout(title = dict(text = '<b>'+self.chart_title+'</b>',
+                                            font = dict(family = self.chart_text_font,
+                                                        size = self.chart_text_size + 4,
+                                                        color = self.chart_text_colour),
+                                            x = 0.5
+                                           ),
+                               showlegend=True,
+                               hovermode = 'x',
+                               legend = dict(font = dict(family = self.chart_text_font,
+                                                         size = self.chart_text_size,
+                                                         color = self.chart_text_colour
+                                                        ),
+                                             x = legx,
+                                             y = legy,
+                                             bgcolor = 'rgba(0,0,0,0)'
+                                            ),
+                               margin = dict(t = self.top_margin,
+                                             l = self.left_margin,
+                                             b = self.bottom_margin,
+                                             r = self.right_margin
+                                            ),
+                               width = self.plot_width,
+                               height = self.plot_height,
+                               font = dict(family = self.chart_text_font,
+                                           size = self.chart_text_size,
+                                           color = self.chart_text_colour
+                                          ),
+                               paper_bgcolor=bg_rgba,
+                               plot_bgcolor='rgba(0,0,0,0)',
+                               xaxis = dict(visible = True,
+                                            color = self.axes_colour,
+                                            title = dict(text = '<b>'+self.x_title+'</b>',
+                                                         font = dict(family = self.chart_text_font,
+                                                                     size = self.chart_text_size,
+                                                                     color = self.chart_text_colour
+                                                                    )
+                                                        ),
+                                            #range = None,
+                                            ticks = 'outside',
+                                            ticklen = 5,
+                                            tickwidth = self.axes_thickness,
+                                            tickcolor = self.axes_colour,
+                                            tickfont = dict(family = self.chart_text_font,
+                                                            size = self.chart_text_size,
+                                                            color = self.chart_text_colour
+                                                           ),
+                                            tickangle = xtickangle,
+                                            showline = True,
+                                            linecolor = self.axes_colour,
+                                            linewidth = self.axes_thickness,
+                                            showgrid = False,
+                                            zeroline = False,
+                                           ),
+                               yaxis = dict(visible = True,
+                                            color = self.axes_colour,
+                                            title = dict(text = '<b>'+self.y_title+'</b>',
+                                                         font = dict(family = self.chart_text_font,
+                                                                     size = self.chart_text_size,
+                                                                     color = self.chart_text_colour
+                                                                    )
+                                                        ),
+                                            range = [ymin,ymax],
+                                            rangemode = 'tozero',
+                                            ticks = 'outside',
+                                            ticklen = 5,
+                                            tickwidth = self.axes_thickness,
+                                            tickcolor = self.axes_colour,
+                                            tickfont = dict(family = self.chart_text_font,
+                                                            size = self.chart_text_size,
+                                                            color = self.chart_text_colour
+                                                           ),
+                                            showline = True,
+                                            linecolor = self.axes_colour,
+                                            linewidth = self.axes_thickness,
+                                            showgrid = self.y_grid_lines,
+                                            gridcolor = 'grey',
+                                            zeroline = self.y_zeroline,
+                                            zerolinecolor = 'grey',
+                                            zerolinewidth = 1
+                                           ),
+                               barmode = self.bar_mode,
+                               annotations = annotations,
+                               shapes = shapes
+                              )
+
+            # create figure
+            self.figure = go.Figure(data=data, layout = layout)
+
+            return self.figure
     
     @param.depends('export', watch = True)
     def export_plots(self):
@@ -419,7 +422,7 @@ class ChartStudio(param.Parameterized):
                 self.figure.write_html(self.export_to_file + ".html")
             if self.cslayout == True:
                 self.export_cslayout()
-
+                
 # import custom styles
 pn.extension(css_files=["styles.css"])
 height = 600
@@ -575,7 +578,7 @@ studio = pn.Column(pn.Row(pn.pane.PNG('logo_pyviz.png', width = 70, height = 70)
                           pn.pane.PNG('logo_plotly.png', width = 70, height = 70),
                           pn.pane.HTML('<h1>Plotly Chart Studio<h1>')),
                    panes,
-                   pn.pane.HTML('<p><b>Developed by:</b> Dave Hughes <b>Last updated:</b> 23 November 2019</p>'))
+                   pn.pane.HTML('<p><b>Developed by:</b> Dave Hughes<br><b>Last updated:</b> 26 November 2019</p>'))
 
 # set servable method to be called for command line and deployed to heroku
 studio.servable()#.show()
