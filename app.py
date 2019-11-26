@@ -578,7 +578,7 @@ studio = pn.Column(pn.Row(pn.pane.PNG('logo_pyviz.png', width = 70, height = 70)
                           pn.pane.PNG('logo_plotly.png', width = 70, height = 70),
                           pn.pane.HTML('<h1>Plotly Chart Studio<h1>')),
                    panes,
-                   pn.pane.HTML('<p><b>Developed by:</b> Dave Hughes<br><b>Last updated:</b> 26 November 2019</p>'))
+                   pn.pane.HTML('<p><b>Last updated:</b> 26 November 2019</p>'))
 
 # set servable method to be called for command line and deployed to heroku
 studio.servable()#.show()

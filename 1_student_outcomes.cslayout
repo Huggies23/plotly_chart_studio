@@ -1,0 +1,56 @@
+Attribute,Value,Type
+chart_type,Scatter,<class 'str'>
+bar_mode,group,<class 'str'>
+scatter_mode,lines+markers,<class 'str'>
+chart_background_colour,#ffffff,<class 'str'>
+chart_background_opacity,0,<class 'int'>
+chart_text_font,Arial,<class 'str'>
+chart_text_size,14,<class 'int'>
+chart_text_colour,#000040,<class 'str'>
+chart_title,Degree outcomes by entry qualifications in 2016-17,<class 'str'>
+plot_width,700,<class 'int'>
+plot_height,450,<class 'int'>
+top_margin,60,<class 'int'>
+bottom_margin,80,<class 'int'>
+left_margin,80,<class 'int'>
+right_margin,80,<class 'int'>
+axes_colour,#000040,<class 'str'>
+axes_thickness,1,<class 'int'>
+x_title,Entry Qualifications,<class 'str'>
+y_title,Proportion of qualifiers (%),<class 'str'>
+y_autorange,False,<class 'bool'>
+y_min,0,<class 'int'>
+y_max,110,<class 'int'>
+y_grid_lines,False,<class 'bool'>
+y_zeroline,False,<class 'bool'>
+auto_x_tick_angle,False,<class 'bool'>
+x_tick_angle,-45,<class 'int'>
+auto_position_legend,False,<class 'bool'>
+legend_x,0.2,<class 'float'>
+legend_y,0.5,<class 'float'>
+annotation_1,True,<class 'bool'>
+text_1,<b>A-level</b>,<class 'str'>
+x_1,5.5,<class 'float'>
+y_1,105,<class 'int'>
+annotation_2,True,<class 'bool'>
+text_2,<b>BTEC</b>,<class 'str'>
+x_2,15,<class 'int'>
+y_2,105,<class 'int'>
+annotation_3,False,<class 'bool'>
+text_3,Annotation 3,<class 'str'>
+x_3,0,<class 'int'>
+y_3,0,<class 'int'>
+square_1,True,<class 'bool'>
+square_1_colour,#8000ff,<class 'str'>
+square_1_opacity,0.2,<class 'float'>
+x_min_1,-0.5,<class 'float'>
+x_max_1,11.5,<class 'float'>
+y_min_1,0,<class 'int'>
+y_max_1,110,<class 'int'>
+square_2,True,<class 'bool'>
+square_2_colour,#400040,<class 'str'>
+square_2_opacity,0.2,<class 'float'>
+x_min_2,11.5,<class 'float'>
+x_max_2,18.5,<class 'float'>
+y_min_2,0,<class 'int'>
+y_max_2,110,<class 'int'>
