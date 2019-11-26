@@ -54,6 +54,9 @@ class ChartStudio(param.Parameterized):
     y_autorange = param.Boolean(default = True)
     y_min = param.Number(default = 0)
     y_max = param.Number(default = 0)
+    x_autorange = param.Boolean(default = True)
+    x_min = param.Number(default = 0)
+    x_max = param.Number(default = 0)
     y_grid_lines = param.Boolean(default = False)
     y_zeroline = param.Boolean(default = False)
     auto_x_tick_angle = param.Boolean(default = True)
@@ -181,7 +184,8 @@ class ChartStudio(param.Parameterized):
                    'chart_type', 'bar_mode', 'scatter_mode',
                    'chart_background_colour', 'chart_background_opacity', 'chart_text_font', 'chart_text_size', 'chart_text_colour', 'chart_title',
                    'plot_width', 'plot_height', 'top_margin', 'bottom_margin', 'left_margin', 'right_margin',
-                   'axes_colour', 'axes_thickness', 'x_title', 'y_title', 'y_autorange', 'y_min', 'y_max','y_grid_lines','y_zeroline',
+                   'axes_colour', 'axes_thickness', 'x_title', 'y_title', 'y_autorange', 'y_min', 'y_max','x_autorange', 'x_min', 'x_max',
+                   'y_grid_lines','y_zeroline',
                    'auto_x_tick_angle', 'x_tick_angle',
                    'auto_position_legend','legend_x','legend_y',
                    'annotation_1', 'text_1', 'x_1', 'y_1',
@@ -232,6 +236,12 @@ class ChartStudio(param.Parameterized):
             else:
                 ymin = self.y_min
                 ymax = self.y_max
+            if self.x_autorange == True:
+                xmin = None
+                xmax = None
+            else:
+                xmin = self.x_min
+                xmax = self.x_max
             if self.auto_x_tick_angle == True:
                 xtickangle = None
             else:
@@ -354,7 +364,7 @@ class ChartStudio(param.Parameterized):
                                                                      color = self.chart_text_colour
                                                                     )
                                                         ),
-                                            #range = None,
+                                            range = [xmin, xmax],
                                             ticks = 'outside',
                                             ticklen = 5,
                                             tickwidth = self.axes_thickness,
@@ -488,6 +498,9 @@ axes_tab = pn.Column(pn.pane.HTML('<b>General:</b>'),
                      app.param.y_autorange,
                      app.param.y_min,
                      app.param.y_max,
+                     app.param.x_autorange,
+                     app.param.x_min,
+                     app.param.x_max,
                      pn.pane.HTML('<b>Other:</b>'),
                      app.param.y_grid_lines,
                      app.param.y_zeroline,
