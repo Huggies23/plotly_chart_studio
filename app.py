@@ -26,6 +26,10 @@ class ChartStudio(param.Parameterized):
     bar_mode = param.ObjectSelector(default="group", objects=["group", "stack", "relative", "overlay"])
     scatter_mode = param.ObjectSelector(default = "lines+markers", objects = ["lines+markers","lines","markers"])
     
+    # trace tab widgets
+    
+    trace_to_edit = param.ObjectSelector(default=None, objects=None)
+    
     # style tab widgets
     
     # general tab widgets
@@ -71,38 +75,53 @@ class ChartStudio(param.Parameterized):
     # annotate tab widgets
     
     # text annotations widgets
-    annotation_1 = param.Boolean(default = False)
+    show_footnote = param.Boolean(default = False)
+    footnote_text = param.String(default= '<i>Footnote:</i>')
+    y_footnote = param.Number(default = -0.1)
+    
+    show_annotation_1 = param.Boolean(default = False)
     text_1 = param.String(default= 'Annotation 1')
     x_1 = param.Number(default = 0)
     y_1 = param.Number(default = 0)
     
-    annotation_2 = param.Boolean(default = False)
+    show_annotation_2 = param.Boolean(default = False)
     text_2 = param.String(default= 'Annotation 2')
     x_2 = param.Number(default = 0)
     y_2 = param.Number(default = 0)
     
-    annotation_3 = param.Boolean(default = False)
+    show_annotation_3 = param.Boolean(default = False)
     text_3 = param.String(default= 'Annotation 3')
     x_3 = param.Number(default = 0)
     y_3 = param.Number(default = 0)
     
     # shape annotation widgets
     
-    square_1 = param.Boolean(default = False)
-    square_1_colour = param.Color(default='#0000ff')
-    square_1_opacity = param.Number(0.5, bounds=(0.0, 1.0))
+    show_shape_1 = param.Boolean(default = False)
+    shape_1_type = param.ObjectSelector(default = "rect", objects = ["rect","circle","line"])
+    shape_1_colour = param.Color(default='#0000ff')
+    shape_1_opacity = param.Number(0.5, bounds=(0.0, 1.0))
     x_min_1 = param.Number(default = 0)
     x_max_1 = param.Number(default = 0)
     y_min_1 = param.Number(default = 0)
     y_max_1 = param.Number(default = 0)
     
-    square_2 = param.Boolean(default = False)
-    square_2_colour = param.Color(default='#00ff00')
-    square_2_opacity = param.Number(0.5, bounds=(0.0, 1.0))
+    show_shape_2 = param.Boolean(default = False)
+    shape_2_type = param.ObjectSelector(default = "rect", objects = ["rect","circle","line"])
+    shape_2_colour = param.Color(default='#00ff00')
+    shape_2_opacity = param.Number(0.5, bounds=(0.0, 1.0))
     x_min_2 = param.Number(default = 0)
     x_max_2 = param.Number(default = 0)
     y_min_2 = param.Number(default = 0)
     y_max_2 = param.Number(default = 0)
+    
+    show_shape_3 = param.Boolean(default = False)
+    shape_3_type = param.ObjectSelector(default = "rect", objects = ["rect","circle","line"])
+    shape_3_colour = param.Color(default='#ff0000')
+    shape_3_opacity = param.Number(0.5, bounds=(0.0, 1.0))
+    x_min_3 = param.Number(default = 0)
+    x_max_3 = param.Number(default = 0)
+    y_min_3 = param.Number(default = 0)
+    y_max_3 = param.Number(default = 0)
     
     # export chart tab
     export_to_file = param.String(default= r"Figure_1", doc="Declare name for exported plot file")
@@ -171,7 +190,9 @@ class ChartStudio(param.Parameterized):
         params_df = []
         # ignore name and export_plot params i.e. start at 1 and end at peniltimate param
         for i in range(len(params)):
-            if params[i] not in ['name','data_file','use_layout_file','layout_file','export_to_file','png','svg','pdf','html','json','cslayout','export']:
+            if params[i] not in ['name','data_file','use_layout_file','layout_file',
+                                 'export_to_file','png','svg','pdf','html','json',
+                                 'cslayout','export','trace_to_edit']:
                 params_df.append([params[i], 
                                   getattr(self, list(self.param.objects().keys())[i]),
                                  type(getattr(self, list(self.param.objects().keys())[i]))
@@ -188,16 +209,19 @@ class ChartStudio(param.Parameterized):
                    'y_grid_lines','y_zeroline',
                    'auto_x_tick_angle', 'x_tick_angle',
                    'auto_position_legend','legend_x','legend_y',
-                   'annotation_1', 'text_1', 'x_1', 'y_1',
-                   'annotation_2', 'text_2', 'x_2', 'y_2',
-                   'annotation_3', 'text_3', 'x_3', 'y_3',
-                   'square_1', 'square_1_colour', 'square_1_opacity', 'x_min_1', 'x_max_1', 'y_min_1', 'y_max_1',
-                   'square_2', 'square_2_colour', 'square_2_opacity', 'x_min_2', 'x_max_2', 'y_min_2', 'y_max_2'
+                   'show_footnote', 'footnote_text','y_footnote',
+                   'show_annotation_1', 'text_1', 'x_1', 'y_1',
+                   'show_annotation_2', 'text_2', 'x_2', 'y_2',
+                   'show_annotation_3', 'text_3', 'x_3', 'y_3',
+                   'show_shape_1', 'shape_1_type','shape_1_colour', 'shape_1_opacity', 'x_min_1', 'x_max_1', 'y_min_1', 'y_max_1',
+                   'show_shape_2', 'shape_2_type','shape_2_colour', 'shape_2_opacity', 'x_min_2', 'x_max_2', 'y_min_2', 'y_max_2',
+                   'show_shape_3', 'shape_3_type','shape_3_colour', 'shape_3_opacity', 'x_min_3', 'x_max_3', 'y_min_3', 'y_max_3'
                   ) # all plot widgets I think
     def plot(self):
         if self.update_plot == True:
             colours = cycle(['#3b064d','#8105d8','#ed0cef','#fe59d7'])
             # create traces
+            objects = []
             data = []
             for i in range(0, len(self.trace_names)):
 
@@ -228,7 +252,11 @@ class ChartStudio(param.Parameterized):
                                                     )
                                       )
                                )
-
+                objects.append(f'Trace {i}')
+            
+            self.param.trace_to_edit.objects = objects
+            self.trace_to_edit = objects[0]
+            
             # set values for items with both tickboxes and value boxes
             if self.y_autorange == True:
                 ymin = None
@@ -261,8 +289,24 @@ class ChartStudio(param.Parameterized):
 
             # create annotations and shapes
             annotations = []
+            
+            if self.show_footnote == True:
+                annotations.append(dict(text = self.footnote_text,
+                                        font = dict(family = self.chart_text_font,
+                                                    size = self.chart_text_size - 2,
+                                                    color = self.chart_text_colour
+                                                   ),
+                                        xanchor = 'right',
+                                        yref = 'paper',
+                                        xref = 'paper',
+                                        x = 1.0,
+                                        y = self.y_footnote,
+                                        align = 'right',
+                                        showarrow = False
+                                       )
+                                  )
 
-            if self.annotation_1 == True:
+            if self.show_annotation_1 == True:
                 annotations.append(dict(text = self.text_1,
                                         font = dict(family = self.chart_text_font,
                                                     size = self.chart_text_size,
@@ -274,7 +318,7 @@ class ChartStudio(param.Parameterized):
                                        )
                                   )
 
-            if self.annotation_2 == True:
+            if self.show_annotation_2 == True:
                 annotations.append(dict(text = self.text_2,
                                         font = dict(family = self.chart_text_font,
                                                     size = self.chart_text_size,
@@ -286,7 +330,7 @@ class ChartStudio(param.Parameterized):
                                        )
                                   )
 
-            if self.annotation_3 == True:
+            if self.show_annotation_3 == True:
                 annotations.append(dict(text = self.text_3,
                                         font = dict(family = self.chart_text_font,
                                                     size = self.chart_text_size,
@@ -300,28 +344,41 @@ class ChartStudio(param.Parameterized):
 
             shapes = []
 
-            if self.square_1 == True:
-                shapes.append(dict(type = 'rect',
+            if self.show_shape_1 == True:
+                shapes.append(dict(type = self.shape_1_type,
                                   layer = 'below',
                                   x0 = self.x_min_1,
                                   x1 = self.x_max_1,
                                   y0 = self.y_min_1,
                                   y1 = self.y_max_1,
-                                  opacity = self.square_1_opacity,
-                                  fillcolor = self.square_1_colour,
+                                  opacity = self.shape_1_opacity,
+                                  fillcolor = self.shape_1_colour,
                                   line = dict(width = 0)
                                   )
                              )
 
-            if self.square_2 == True:
-                shapes.append(dict(type = 'rect',
+            if self.show_shape_2 == True:
+                shapes.append(dict(type = self.shape_2_type,
                                   layer = 'below',
                                   x0 = self.x_min_2,
                                   x1 = self.x_max_2,
                                   y0 = self.y_min_2,
                                   y1 = self.y_max_2,
-                                  opacity = self.square_2_opacity,
-                                  fillcolor = self.square_2_colour,
+                                  opacity = self.shape_2_opacity,
+                                  fillcolor = self.shape_2_colour,
+                                  line = dict(width = 0)
+                                  )
+                             )
+                
+            if self.show_shape_3 == True:
+                shapes.append(dict(type = self.shape_3_type,
+                                  layer = 'below',
+                                  x0 = self.x_min_3,
+                                  x1 = self.x_max_3,
+                                  y0 = self.y_min_3,
+                                  y1 = self.y_max_3,
+                                  opacity = self.shape_3_opacity,
+                                  fillcolor = self.shape_3_colour,
                                   line = dict(width = 0)
                                   )
                              )
@@ -470,6 +527,11 @@ type_tab = pn.Column(app.param.chart_type,
                      css_classes=['widget-box'], height = height - 30
                     )
 
+trace_tab = pn.Column(app.param.trace_to_edit,
+                      pn.pane.HTML('<b>TBC</b>'),
+                     css_classes=['widget-box'], height = height - 30
+                    )
+
 # create chart editor tabs
 general_tab = pn.Column(pn.pane.HTML('<b>General:</b>'),
                         app.param.chart_background_colour,
@@ -518,35 +580,55 @@ style_tab = pn.Tabs(('General', general_tab),
                    ('Axes', axes_tab),
                    ('Legend', leg_tab))
 
-text_tab = pn.Column(app.param.annotation_1,
+text_tab = pn.Column(pn.pane.HTML('<b>Footnote:</b>'),
+                     app.param.show_footnote,
+                     app.param.footnote_text,
+                     app.param.y_footnote,
+                     pn.pane.HTML('<b>Annotation 1:</b>'),
+                     app.param.show_annotation_1,
                      app.param.text_1,
                      app.param.x_1,
                      app.param.y_1,
-                     app.param.annotation_2,
+                     pn.pane.HTML('<b>Annotation 2:</b>'),
+                     app.param.show_annotation_2,
                      app.param.text_2,
                      app.param.x_2,
                      app.param.y_2,
-                     app.param.annotation_3,
+                     pn.pane.HTML('<b>Annotation 3:</b>'),
+                     app.param.show_annotation_3,
                      app.param.text_3,
                      app.param.x_3,
                      app.param.y_3,
                      css_classes=['widget-box'], height=height- 2*30
                     )
 
-shapes_tab = pn.Column(app.param.square_1,
-                      app.param.square_1_colour,
-                      app.param.square_1_opacity,
+shapes_tab = pn.Column(pn.pane.HTML('<b>Shape 1:</b>'),
+                       app.param.show_shape_1,
+                       app.param.shape_1_type,
+                      app.param.shape_1_colour,
+                      app.param.shape_1_opacity,
                       app.param.x_min_1,
                        app.param.x_max_1,
                        app.param.y_min_1,
                        app.param.y_max_1,
-                       app.param.square_2,
-                      app.param.square_2_colour,
-                      app.param.square_2_opacity,
+                       pn.pane.HTML('<b>Shape 2:</b>'),
+                       app.param.show_shape_2,
+                       app.param.shape_2_type,
+                      app.param.shape_2_colour,
+                      app.param.shape_2_opacity,
                       app.param.x_min_2,
                        app.param.x_max_2,
                        app.param.y_min_2,
                        app.param.y_max_2,
+                       pn.pane.HTML('<b>Shape 3:</b>'),
+                       app.param.show_shape_3,
+                       app.param.shape_3_type,
+                      app.param.shape_3_colour,
+                      app.param.shape_3_opacity,
+                      app.param.x_min_3,
+                       app.param.x_max_3,
+                       app.param.y_min_3,
+                       app.param.y_max_3,
                        css_classes=['widget-box'], height=height- 2*30
                       )
                        
@@ -554,6 +636,7 @@ anno_tab = pn.Tabs(('Text', text_tab),
                   ('Shapes', shapes_tab)) 
 
 editor_tab = pn.Tabs(('Type', type_tab),
+                     ('Traces', trace_tab),
                      ('Style', style_tab),
                     ('Annotate', anno_tab))
 
@@ -591,7 +674,7 @@ studio = pn.Column(pn.Row(pn.pane.PNG('logo_pyviz.png', width = 70, height = 70)
                           pn.pane.PNG('logo_plotly.png', width = 70, height = 70),
                           pn.pane.HTML('<h1>Plotly Chart Studio<h1>')),
                    panes,
-                   pn.pane.HTML('<p><b>Last updated:</b> 26 November 2019</p>'))
+                   pn.pane.HTML('<p><b>Last updated:</b> 27 November 2019</p>'))
 
 # set servable method to be called for command line and deployed to heroku
 studio.servable()#.show()
