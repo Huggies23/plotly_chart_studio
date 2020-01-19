@@ -10,6 +10,7 @@ from io import StringIO
 pn.extension('plotly')
 
 # create chart studio class
+# create chart studio class
 class ChartStudio(param.Parameterized):
     
     # create param objects for all possible widgets in the app
@@ -100,6 +101,8 @@ class ChartStudio(param.Parameterized):
     shape_1_type = param.ObjectSelector(default = "rect", objects = ["rect","circle","line"])
     shape_1_colour = param.Color(default='#0000ff')
     shape_1_opacity = param.Number(0.5, bounds=(0.0, 1.0))
+    shape_1_line_style = param.ObjectSelector(default = "solid", objects = ["solid", "dot", "dash", "longdash", "dashdot", "longdashdot"])
+    shape_1_line_width = param.Integer(default = 0)
     x_min_1 = param.Number(default = 0)
     x_max_1 = param.Number(default = 0)
     y_min_1 = param.Number(default = 0)
@@ -109,6 +112,8 @@ class ChartStudio(param.Parameterized):
     shape_2_type = param.ObjectSelector(default = "rect", objects = ["rect","circle","line"])
     shape_2_colour = param.Color(default='#00ff00')
     shape_2_opacity = param.Number(0.5, bounds=(0.0, 1.0))
+    shape_2_line_style = param.ObjectSelector(default = "solid", objects = ["solid", "dot", "dash", "longdash", "dashdot", "longdashdot"])
+    shape_2_line_width = param.Integer(default = 0)
     x_min_2 = param.Number(default = 0)
     x_max_2 = param.Number(default = 0)
     y_min_2 = param.Number(default = 0)
@@ -118,6 +123,8 @@ class ChartStudio(param.Parameterized):
     shape_3_type = param.ObjectSelector(default = "rect", objects = ["rect","circle","line"])
     shape_3_colour = param.Color(default='#ff0000')
     shape_3_opacity = param.Number(0.5, bounds=(0.0, 1.0))
+    shape_3_line_style = param.ObjectSelector(default = "solid", objects = ["solid", "dot", "dash", "longdash", "dashdot", "longdashdot"])
+    shape_3_line_width = param.Integer(default = 0)
     x_min_3 = param.Number(default = 0)
     x_max_3 = param.Number(default = 0)
     y_min_3 = param.Number(default = 0)
@@ -136,6 +143,8 @@ class ChartStudio(param.Parameterized):
     data = None
     figure = None    
     update_plot = True
+    
+    #dataframe  = param.DataFrame(pd.util.testing.makeDataFrame().iloc[:3])
     
     @param.depends('data_file', watch=True) 
     def process_file(self):
@@ -213,15 +222,16 @@ class ChartStudio(param.Parameterized):
                    'show_annotation_1', 'text_1', 'x_1', 'y_1',
                    'show_annotation_2', 'text_2', 'x_2', 'y_2',
                    'show_annotation_3', 'text_3', 'x_3', 'y_3',
-                   'show_shape_1', 'shape_1_type','shape_1_colour', 'shape_1_opacity', 'x_min_1', 'x_max_1', 'y_min_1', 'y_max_1',
-                   'show_shape_2', 'shape_2_type','shape_2_colour', 'shape_2_opacity', 'x_min_2', 'x_max_2', 'y_min_2', 'y_max_2',
-                   'show_shape_3', 'shape_3_type','shape_3_colour', 'shape_3_opacity', 'x_min_3', 'x_max_3', 'y_min_3', 'y_max_3'
+                   'show_shape_1', 'shape_1_type','shape_1_colour', 'shape_1_opacity', 'shape_1_line_style', 'shape_1_line_width', 'x_min_1', 'x_max_1', 'y_min_1', 'y_max_1',
+                   'show_shape_2', 'shape_2_type','shape_2_colour', 'shape_2_opacity', 'shape_2_line_style', 'shape_2_line_width', 'x_min_2', 'x_max_2', 'y_min_2', 'y_max_2',
+                   'show_shape_3', 'shape_3_type','shape_3_colour', 'shape_3_opacity', 'shape_3_line_style', 'shape_3_line_width', 'x_min_3', 'x_max_3', 'y_min_3', 'y_max_3'
                   ) # all plot widgets I think
     def plot(self):
         if self.update_plot == True:
+            
             colours = cycle(['#3b064d','#8105d8','#ed0cef','#fe59d7'])
+            
             # create traces
-            objects = []
             data = []
             for i in range(0, len(self.trace_names)):
 
@@ -252,10 +262,9 @@ class ChartStudio(param.Parameterized):
                                                     )
                                       )
                                )
-                objects.append(f'Trace {i}')
             
-            self.param.trace_to_edit.objects = objects
-            self.trace_to_edit = objects[0]
+            self.param.trace_to_edit.objects = self.trace_names
+            self.trace_to_edit = self.trace_names[0]
             
             # set values for items with both tickboxes and value boxes
             if self.y_autorange == True:
@@ -353,7 +362,9 @@ class ChartStudio(param.Parameterized):
                                   y1 = self.y_max_1,
                                   opacity = self.shape_1_opacity,
                                   fillcolor = self.shape_1_colour,
-                                  line = dict(width = 0)
+                                  line = dict(color = self.shape_1_colour,
+                                              width = self.shape_1_line_width,
+                                              dash = self.shape_1_line_style)
                                   )
                              )
 
@@ -364,9 +375,9 @@ class ChartStudio(param.Parameterized):
                                   x1 = self.x_max_2,
                                   y0 = self.y_min_2,
                                   y1 = self.y_max_2,
-                                  opacity = self.shape_2_opacity,
-                                  fillcolor = self.shape_2_colour,
-                                  line = dict(width = 0)
+                                  line = dict(color = self.shape_2_colour,
+                                              width = self.shape_2_line_width,
+                                              dash = self.shape_2_line_style)
                                   )
                              )
                 
@@ -379,7 +390,9 @@ class ChartStudio(param.Parameterized):
                                   y1 = self.y_max_3,
                                   opacity = self.shape_3_opacity,
                                   fillcolor = self.shape_3_colour,
-                                  line = dict(width = 0)
+                                  line = dict(color = self.shape_3_colour,
+                                              width = self.shape_3_line_width,
+                                              dash = self.shape_3_line_style)
                                   )
                              )
             # create layout
@@ -607,7 +620,9 @@ shapes_tab = pn.Column(pn.pane.HTML('<b>Shape 1:</b>'),
                        app.param.shape_1_type,
                       app.param.shape_1_colour,
                       app.param.shape_1_opacity,
-                      app.param.x_min_1,
+                      app.param.shape_1_line_style,
+                      app.param.shape_1_line_width,
+                       app.param.x_min_1,
                        app.param.x_max_1,
                        app.param.y_min_1,
                        app.param.y_max_1,
@@ -616,6 +631,8 @@ shapes_tab = pn.Column(pn.pane.HTML('<b>Shape 1:</b>'),
                        app.param.shape_2_type,
                       app.param.shape_2_colour,
                       app.param.shape_2_opacity,
+                      app.param.shape_2_line_style,
+                      app.param.shape_2_line_width,
                       app.param.x_min_2,
                        app.param.x_max_2,
                        app.param.y_min_2,
@@ -625,6 +642,8 @@ shapes_tab = pn.Column(pn.pane.HTML('<b>Shape 1:</b>'),
                        app.param.shape_3_type,
                       app.param.shape_3_colour,
                       app.param.shape_3_opacity,
+                      app.param.shape_3_line_style,
+                      app.param.shape_3_line_width,
                       app.param.x_min_3,
                        app.param.x_max_3,
                        app.param.y_min_3,
@@ -661,6 +680,7 @@ widgets = pn.Tabs(('Import data', import_tab),
                  )
 
 table = pn.Column(app.show_data,
+                  #app.param.dataframe,
                   css_classes=['data-table'], height=height, width = 650)
 
 display = pn.Tabs(('Chart view', app.plot),
@@ -674,7 +694,7 @@ studio = pn.Column(pn.Row(pn.pane.PNG('logo_pyviz.png', width = 70, height = 70)
                           pn.pane.PNG('logo_plotly.png', width = 70, height = 70),
                           pn.pane.HTML('<h1>Plotly Chart Studio<h1>')),
                    panes,
-                   pn.pane.HTML('<p><b>Last updated:</b> 27 November 2019</p>'))
+                   pn.pane.HTML('<p><b>Last updated:</b> 12 January 2020</p>'))
 
 # set servable method to be called for command line and deployed to heroku
 studio.servable()#.show()
