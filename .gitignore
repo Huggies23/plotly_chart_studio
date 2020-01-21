@@ -1,3 +1,4 @@
 .ipynb_checkpoints
 __pycache__
-requirements_full.txt
+lodash.js
+plotly.js
